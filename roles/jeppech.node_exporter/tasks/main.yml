@@ -1,0 +1,58 @@
+---
+- name: Request latest node_exporter release from GitHub.
+  ansible.builtin.uri:
+    url: "{{ nodeexporter_release_url }}"
+    return_content: true
+  register: nodeexporter_release_info
+
+- name: Download node_exporter from GitHub.
+  loop: "{{ nodeexporter_release_info.json.assets }}"
+  when: item.name == nodeexporter_tarball
+  ansible.builtin.unarchive:
+    src: "{{ item.browser_download_url }}"
+    dest: "{{ nodeexporter_install_dir }}"
+    remote_src: true
+    mode: "0755"
+    include:
+      - node_exporter
+
+- name: Create node_exporter user.
+  ansible.builtin.user:
+    system: true
+    name: "{{ nodeexporter_user }}"
+    shell: "/sbin/nologin"
+    home: "{{ nodeexporter_home_dir }}"
+    create_home: true
+    state: present
+
+- name: Ensure textfile_collector dir.
+  ansible.builtin.file:
+    path: "/var/lib/node_exporter/textfile_collector"
+    owner: "{{ nodeexporter_user }}"
+    mode: "0755"
+    state: directory
+
+- name: Copy systemd unit for node_exporter.
+  ansible.builtin.template:
+    src: "node_exporter.service.j2"
+    dest: "/etc/systemd/system/node_exporter.service"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Copy systemd environment file for node_exporter.
+  ansible.builtin.template:
+    src: "node_exporter.env.j2"
+    dest: "/etc/default/node_exporter.env"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Ensure node_exporter is started and enabled at boot.
+  ansible.builtin.systemd:
+    name: node_exporter
+    state: "{{ nodeexporter_service_state }}"
+    enabled: "{{ nodeexporter_service_enabled }}"
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: nodeexporter_service_manage | bool

@@ -1,0 +1,7 @@
+---
+hcloudcli_version: v1.43.1
+hcloudcli_install_dir: /usr/local/bin
+hcloudcli_github_repo: https://api.github.com/repos/hetznercloud/cli
+hcloudcli_release_url: "{{ hcloudcli_github_repo }}/releases/tags/{{ hcloudcli_version }}"
+hcloudcli_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+hcloudcli_tarball: "hcloud-linux-{{ hcloudcli_arch }}.tar.gz"

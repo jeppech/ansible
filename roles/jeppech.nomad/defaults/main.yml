@@ -1,0 +1,17 @@
+---
+nomad_packages:
+  - nomad
+
+nomad_packages_state: present
+
+# Service options.
+nomad_service_manage: true
+nomad_service_state: started
+nomad_service_enabled: true
+
+# Nomad Container Network Interface (CNI) plugins.
+nomad_add_cni_plugins: false
+nomad_cni_plugins_dir: /opt/cni/bin
+
+# Nomad environment variables.
+nomad_environment: {}

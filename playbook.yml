@@ -1,0 +1,12 @@
+---
+- hosts: cluster
+  become: true
+
+  roles:
+    - jeppech.node_exporter
+    - jeppech.hcloud_cli
+    - jeppech.docker
+    - jeppech.consul
+    - name: jeppech.nomad
+      vars:
+        - nomad_add_cni_plugins: true

@@ -1,0 +1,41 @@
+---
+- name: Ensure dependencies are installed.
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg2
+    state: present
+  when: haproxy_add_repo | bool
+
+- name: Add Haproxy key.
+  ansible.builtin.get_url:
+    url: "{{ haproxy_apt_gpg_key_url }}"
+    dest: "{{ haproxy_apt_gpg_dest }}"
+    mode: "0644"
+    force: false
+  register: add_repository_key
+  ignore_errors: "{{ haproxy_apt_ignore_key_error }}"
+  when: haproxy_add_repo | bool
+
+- name: Add Haproxy repository.
+  ansible.builtin.apt_repository:
+    repo: "{{ haproxy_apt_repo_entry }}"
+    state: present
+    filename: "{{ haproxy_apt_filename }}"
+    update_cache: true
+  when: haproxy_add_repo | bool
+
+- name: Install Haproxy.
+  ansible.builtin.package:
+    name: "haproxy-{{ haproxy_version }}.*"
+    state: present
+  when: haproxy_add_repo | bool
+
+- name: Ensure Haproxy is started and enabled at boot.
+  ansible.builtin.service:
+    name: haproxy
+    state: "{{ haproxy_service_state }}"
+    enabled: "{{ haproxy_service_enabled }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: haproxy_service_manage | bool

@@ -1,0 +1,13 @@
+---
+consul_packages:
+  - consul
+
+consul_packages_state: present
+
+# Service options.
+consul_service_manage: true
+consul_service_state: started
+consul_service_enabled: true
+
+# Consul environment variables.
+consul_environment: {}

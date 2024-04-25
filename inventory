@@ -1,0 +1,4 @@
+[cluster]
+cluster01 ansible_host=10.1.1.30
+cluster02 ansible_host=10.1.1.31
+cluster03 ansible_host=10.1.1.32

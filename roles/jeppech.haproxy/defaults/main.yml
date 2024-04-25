@@ -1,0 +1,17 @@
+---
+haproxy_service_manage: true
+haproxy_service_state: started
+haproxy_service_enabled: true
+
+haproxy_add_repo: true
+haproxy_version: "2.9"
+haproxy_repo_url: "http://haproxy.debian.net"
+haproxy_apt_gpg_key_url: "{{ haproxy_repo_url }}/bernat.debian.org.gpg"
+haproxy_apt_gpg_dest: "/etc/apt/keyrings/haproxy.asc"
+haproxy_apt_release_flavour: "{{ ansible_distribution_release }}-backports-{{ haproxy_version }}"
+haproxy_apt_release_channel: main
+haproxy_apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+haproxy_apt_repo_url: "{{ haproxy_repo_url }} {{ haproxy_apt_release_flavour }} {{ haproxy_apt_release_channel }}"
+haproxy_apt_repo_entry: "deb [arch={{ haproxy_apt_arch }} signed-by={{ haproxy_apt_gpg_dest }}] {{ haproxy_apt_repo_url }}"
+haproxy_apt_ignore_key_error: true
+haproxy_apt_filename: "haproxy"

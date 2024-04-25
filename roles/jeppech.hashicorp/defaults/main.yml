@@ -1,0 +1,12 @@
+---
+# Hashicorp repo.
+hashicorp_add_repo: true
+hashicorp_repo_url: "https://apt.releases.hashicorp.com"
+hashicorp_apt_release_channel: main
+hashicorp_apt_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+hashicorp_apt_gpg_dest: "/etc/apt/keyrings/hashicorp.asc"
+hashicorp_apt_repo_url: "{{ hashicorp_repo_url }} {{ ansible_distribution_release }} {{ hashicorp_apt_release_channel }}"
+hashicorp_apt_repo_entry: "deb [arch={{ hashicorp_apt_arch }} signed-by={{ hashicorp_apt_gpg_dest }}] {{ hashicorp_apt_repo_url }}"
+hashicorp_apt_ignore_key_error: true
+hashicorp_apt_gpg_key_url: "{{ hashicorp_repo_url }}/gpg"
+hashicorp_apt_filename: "hashicorp"

@@ -1,0 +1,7 @@
+---
+- name: restart consul
+  ansible.builtin.service:
+    name: consul
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: consul_service_manage | bool

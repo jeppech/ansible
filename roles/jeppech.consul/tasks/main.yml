@@ -1,0 +1,26 @@
+---
+- name: Install Consul.
+  ansible.builtin.package:
+    name: "{{ consul_packages }}"
+    state: "{{ consul_packages_state }}"
+    update_cache: true
+  notify: restart consul
+
+- name: Add Consul environment variables.
+  ansible.builtin.copy:
+    content: |
+      {% for key, value in consul_environment.items() %}
+      {{ key }}="{{ value }}"
+      {% endfor %}
+    dest: /etc/consul.d/consul.env
+    mode: '0600'
+  when: consul_environment.keys() | length > 0
+  notify: restart consul
+
+- name: Ensure Consul is started and enabled at boot.
+  ansible.builtin.service:
+    name: consul
+    state: "{{ consul_service_state }}"
+    enabled: "{{ consul_service_enabled }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: consul_service_manage | bool

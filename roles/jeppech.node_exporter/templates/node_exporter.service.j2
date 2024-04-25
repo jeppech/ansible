@@ -1,0 +1,12 @@
+[Unit]
+Description=Node Exporter
+
+[Service]
+User={{ nodeexporter_user }}
+WorkingDirectory={{ nodeexporter_install_dir }}
+EnvironmentFile=/etc/default/node_exporter.env
+ExecStart={{ nodeexporter_install_dir }}/node_exporter $OPTIONS
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

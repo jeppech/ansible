@@ -1,0 +1,36 @@
+---
+- name: Install Nomad.
+  ansible.builtin.package:
+    name: "{{ nomad_packages }}"
+    state: "{{ nomad_packages_state }}"
+    update_cache: true
+  notify: restart nomad
+
+- name: Add Nomad environment variables.
+  ansible.builtin.copy:
+    content: |
+      {% for key, value in nomad_environment.items() %}
+      {{ key }}="{{ value }}"
+      {% endfor %}
+    dest: /etc/nomad.d/nomad.env
+    mode: '0600'
+  when: nomad_environment.keys() | length > 0
+  notify: restart nomad
+
+- name: Add Nomad CNI plugins.
+  ansible.builtin.include_role:
+    name: jeppech.cni_plugins
+  vars:
+    cni_plugins_owner: root
+    cni_plugins_group: nomad
+    cni_plugins_install_dir: "{{ nomad_cni_plugins_dir }}"
+  when: nomad_add_cni_plugins | bool
+  notify: restart nomad
+
+- name: Ensure Nomad is started and enabled at boot.
+  ansible.builtin.service:
+    name: nomad
+    state: "{{ nomad_service_state }}"
+    enabled: "{{ nomad_service_enabled }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: nomad_service_manage | bool

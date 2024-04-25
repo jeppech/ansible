@@ -1,0 +1,17 @@
+---
+- name: Request latest hcloud-cli release from GitHub.
+  ansible.builtin.uri:
+    url: "{{ hcloudcli_release_url }}"
+    return_content: true
+  register: hcloudcli_release_info
+
+- name: Download hcloud-cli from GitHub.
+  loop: "{{ hcloudcli_release_info.json.assets }}"
+  when: item.name == hcloudcli_tarball
+  ansible.builtin.unarchive:
+    src: "{{ item.browser_download_url }}"
+    dest: "{{ hcloudcli_install_dir }}"
+    remote_src: true
+    mode: "0755"
+    include:
+      - hcloud

@@ -1,0 +1,44 @@
+---
+- name: Include setup tasks.
+  ansible.builtin.include_tasks: setup.yml
+
+- name: Install Docker packages.
+  ansible.builtin.package:
+    name: "{{ docker_packages }}"
+    state: "{{ docker_packages_state }}"
+    update_cache: true
+  notify: restart docker
+
+- name: Ensure /etc/docker directory exists.
+  ansible.builtin.file:
+    path: /etc/docker
+    state: directory
+    mode: '0755'
+  when: docker_daemon_options.keys() | length > 0
+
+- name: Set Docker daemon options.
+  ansible.builtin.copy:
+    content: "{{ docker_daemon_options | to_nice_json }}"
+    dest: /etc/docker/daemon.json
+    mode: '0644'
+  when: docker_daemon_options.keys() | length > 0
+  notify: restart docker
+
+- name: Add Docker daemon environment variables.
+  ansible.builtin.copy:
+    content: |
+      {% for key, value in docker_daemon_environment.items() %}
+      {{ key }}="{{ value }}"
+      {% endfor %}
+    dest: /etc/docker/docker.env
+    mode: '0600'
+  when: docker_daemon_environment.keys() | length > 0
+  notify: restart docker
+
+- name: Ensure Docker is started and enabled at boot.
+  ansible.builtin.service:
+    name: docker
+    state: "{{ docker_service_state }}"
+    enabled: "{{ docker_service_enabled }}"
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: docker_service_manage | bool

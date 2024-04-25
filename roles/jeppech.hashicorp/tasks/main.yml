@@ -1,0 +1,27 @@
+---
+- name: Ensure dependencies are installed.
+  ansible.builtin.apt:
+    name:
+      - apt-transport-https
+      - ca-certificates
+      - gnupg2
+    state: present
+  when: hashicorp_add_repo | bool
+
+- name: Add HashiCorp key.
+  ansible.builtin.get_url:
+    url: "{{ hashicorp_apt_gpg_key_url }}"
+    dest: "{{ hashicorp_apt_gpg_dest }}"
+    mode: "0644"
+    force: false
+  register: add_repository_key
+  ignore_errors: "{{ hashicorp_apt_ignore_key_error }}"
+  when: hashicorp_add_repo | bool
+
+- name: Add HashiCorp repository.
+  ansible.builtin.apt_repository:
+    repo: "{{ hashicorp_apt_repo_entry }}"
+    state: present
+    filename: "{{ hashicorp_apt_filename }}"
+    update_cache: true
+  when: hashicorp_add_repo | bool

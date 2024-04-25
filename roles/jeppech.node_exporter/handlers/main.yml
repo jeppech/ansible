@@ -1,0 +1,8 @@
+---
+# handlers file for jeppech.node_exporter
+- name: restart node_exporter
+  ansible.builtin.service:
+    name: node_exporter
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: nodeexporter_service_manage | bool

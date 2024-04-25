@@ -1,0 +1,7 @@
+---
+- name: restart haproxy
+  ansible.builtin.systemd:
+    name: haproxy
+    state: restarted
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: haproxy_service_manage | bool
