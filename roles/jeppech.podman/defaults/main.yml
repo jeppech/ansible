@@ -1,0 +1,15 @@
+---
+# defaults file for jeppech.podman
+
+# Service options.
+podman_service_manage: true
+podman_service_state: started
+podman_service_enabled: true
+
+# Podman binary.
+podman_version: v5.0.2
+podman_install_dir: /usr/local/bin
+podman_github_repo: https://api.github.com/repos/containers/podman
+podman_release_url: "{{ podman_github_repo }}/releases/tags/{{ podman_version }}"
+podman_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+podman_tarball: "podman-remote-static-linux_{{ podman_arch }}.tar.gz"

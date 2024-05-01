@@ -1,0 +1,14 @@
+---
+- name: Request latest crun release from GitHub.
+  ansible.builtin.uri:
+    url: "{{ crun_release_url }}"
+    return_content: true
+  register: crun_release_info
+
+- name: Download crun from GitHub.
+  loop: "{{ crun_release_info.json.assets }}"
+  when: item.name == crun_binary_name
+  ansible.builtin.get_url:
+    url: "{{ item.browser_download_url }}"
+    dest: "{{ crun_install_dir }}/crun"
+    mode: "0755"

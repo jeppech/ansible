@@ -1,0 +1,10 @@
+---
+# defaults file for jeppech.podman
+
+# Podman binary.
+crun_version: 1.14.4
+crun_install_dir: /usr/bin
+crun_github_repo: https://api.github.com/repos/containers/crun
+crun_release_url: "{{ crun_github_repo }}/releases/tags/{{ crun_version }}"
+crun_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
+crun_binary_name: "crun-{{ crun_version }}-linux-{{ crun_arch }}"
