@@ -1,17 +1,28 @@
 ---
-- name: Request latest hcloud-cli release from GitHub.
-  ansible.builtin.uri:
-    url: "{{ hcloudcli_release_url }}"
-    return_content: true
-  register: hcloudcli_release_info
+- name: Create temporary directory for hcloud.
+  ansible.builtin.file:
+    path: "{{ hcloudcli_tmp_dir }}"
+    state: directory
+    mode: "0755"
 
 - name: Download hcloud-cli from GitHub.
-  loop: "{{ hcloudcli_release_info.json.assets }}"
-  when: item.name == hcloudcli_tarball
-  ansible.builtin.unarchive:
-    src: "{{ item.browser_download_url }}"
-    dest: "{{ hcloudcli_install_dir }}"
-    remote_src: true
+  ansible.builtin.get_url:
+    url: "{{ hcloudcli_release_url }}"
+    dest: "{{ hcloudcli_tmp_dir }}"
     mode: "0755"
-    include:
-      - hcloud
+
+- name: Extract hcloud-cli from archive.
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ hcloudcli_tmp_dir }}/{{ hcloudcli_release_archive }}"
+    dest: "{{ hcloudcli_tmp_dir }}"
+    mode: "0755"
+
+- name: Copy hcloud binary to install directory.
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ hcloudcli_tmp_dir }}/hcloud"
+    dest: "{{ hcloudcli_install_dir }}/hcloud"
+    owner: "root"
+    group: "root"
+    mode: "0755"

@@ -1,20 +1,31 @@
 ---
-- name: Request latest node_exporter release from GitHub.
-  ansible.builtin.uri:
-    url: "{{ nodeexporter_release_url }}"
-    return_content: true
-  register: nodeexporter_release_info
+- name: Create temporary directory for node_exporter.
+  ansible.builtin.file:
+    path: "{{ nodeexporter_tmp_dir }}"
+    state: directory
+    mode: "0755"
 
 - name: Download node_exporter from GitHub.
-  loop: "{{ nodeexporter_release_info.json.assets }}"
-  when: item.name == nodeexporter_tarball
-  ansible.builtin.unarchive:
-    src: "{{ item.browser_download_url }}"
-    dest: "{{ nodeexporter_install_dir }}"
-    remote_src: true
+  ansible.builtin.get_url:
+    url: "{{ nodeexporter_release_url }}"
+    dest: "{{ nodeexporter_tmp_dir }}"
     mode: "0755"
-    include:
-      - node_exporter
+
+- name: Extract node_exporter from archive.
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ nodeexporter_tmp_dir }}/{{ nodeexporter_release_archive }}"
+    dest: "{{ nodeexporter_tmp_dir }}"
+    mode: "0755"
+
+- name: Copy node_exporter binary to install directory.
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ nodeexporter_tmp_dir }}/{{ nodeexporter_release_filename }}/node_exporter"
+    dest: "{{ nodeexporter_install_dir }}/node_exporter"
+    owner: "root"
+    group: "root"
+    mode: "0755"
 
 - name: Create node_exporter user.
   ansible.builtin.user:

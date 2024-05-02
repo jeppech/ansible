@@ -3,11 +3,13 @@ nodeexporter_service_manage: true
 nodeexporter_service_state: started
 nodeexporter_service_enabled: true
 
-nodeexporter_version: v1.8.0
+nodeexporter_version: 1.8.0
 nodeexporter_user: node_exporter
+nodeexporter_tmp_dir: /tmp/node_exporter
 nodeexporter_install_dir: /usr/bin
 nodeexporter_home_dir: "/var/lib/{{ nodeexporter_user }}"
-nodeexporter_github_repo: https://api.github.com/repos/prometheus/node_exporter
-nodeexporter_release_url: "{{ nodeexporter_github_repo }}/releases/tags/{{ nodeexporter_version }}"
 nodeexporter_arch: "{{ 'arm64' if ansible_architecture == 'aarch64' else 'amd64' }}"
-nodeexporter_tarball: "node_exporter-{{ nodeexporter_version }}.linux-{{ nodeexporter_arch }}.tar.gz"
+nodeexporter_release_filename: "node_exporter-{{ nodeexporter_version }}.linux-{{ nodeexporter_arch }}"
+nodeexporter_release_archive: "{{ nodeexporter_release_filename }}.tar.gz"
+nodeexporter_repo_url: "https://github.com/prometheus/node_exporter/releases/download"
+nodeexporter_release_url: "{{ nodeexporter_repo_url }}/v{{ nodeexporter_version }}/{{ nodeexporter_release_archive }}"

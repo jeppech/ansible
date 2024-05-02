@@ -1,9 +1,26 @@
 ---
-- name: Request CNI release from GitHub.
-  ansible.builtin.uri:
+- name: Create temporary directory for CNI plugins.
+  ansible.builtin.file:
+    path: "{{ cni_plugins_tmp_dir }}/{{ cni_plugins_release_filename }}"
+    state: directory
+    mode: "0755"
+
+
+- name: Download CNI plugins from GitHub.
+  ansible.builtin.get_url:
     url: "{{ cni_plugins_release_url }}"
-    return_content: true
-  register: cni_plugins_release_info
+    dest: "{{ cni_plugins_tmp_dir }}"
+    mode: "0755"
+
+- name: Extract CNI plugins from archive.
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ cni_plugins_tmp_dir }}/{{ cni_plugins_release_archive }}"
+    dest: "{{ cni_plugins_tmp_dir }}/{{ cni_plugins_release_filename }}"
+    mode: "0755"
+    exclude:
+      - LICENSE
+      - README.md
 
 - name: Ensure CNI install directory.
   ansible.builtin.file:
@@ -13,16 +30,11 @@
     mode: "0755"
     state: directory
 
-- name: Download CNI plugins from GitHub.
-  loop: "{{ cni_plugins_release_info.json.assets }}"
-  when: item.name == cni_plugins_tarball
-  ansible.builtin.unarchive:
-    src: "{{ item.browser_download_url }}"
-    dest: "{{ cni_plugins_install_dir }}"
+- name: Copy CNI plugins to install directory.
+  ansible.builtin.copy:
     remote_src: true
+    src: "{{ cni_plugins_tmp_dir }}/{{ cni_plugins_release_filename }}/"
+    dest: "{{ cni_plugins_install_dir }}/"
     owner: "{{ cni_plugins_owner }}"
     group: "{{ cni_plugins_group }}"
     mode: "0755"
-    exclude:
-      - LICENSE
-      - README.md
