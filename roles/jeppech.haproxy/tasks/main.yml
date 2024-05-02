@@ -23,13 +23,14 @@
     repo: "{{ haproxy_apt_repo_entry }}"
     state: present
     filename: "{{ haproxy_apt_filename }}"
-    update_cache: true
   when: haproxy_add_repo | bool
 
 - name: Install Haproxy.
-  ansible.builtin.package:
-    name: "haproxy-{{ haproxy_version }}.*"
+  ansible.builtin.apt:
+    name: "haproxy={{ haproxy_version }}.*"
     state: present
+    update_cache: true
+    default_release: "{{ haproxy_apt_release_flavour }}"
   when: haproxy_add_repo | bool
 
 - name: Ensure Haproxy is started and enabled at boot.
