@@ -17,7 +17,7 @@
   when: consul_environment.keys() | length > 0
   notify: restart consul
 
-- name: Ensure Consul is started and enabled at boot.
+- name: Ensure Consul is enabled at boot, and initially {{ consul_service_state }}.
   ansible.builtin.service:
     name: consul
     state: "{{ consul_service_state }}"
