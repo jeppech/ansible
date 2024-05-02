@@ -10,7 +10,7 @@ Delegate=true
 Type=exec
 KillMode=process
 Environment=LOGGING="--log-level=info"
-ExecStart=/usr/bin/podman $LOGGING system service
+ExecStart={{ podman_install_dir }}/podman $LOGGING system service
 
 [Install]
 WantedBy=default.target
