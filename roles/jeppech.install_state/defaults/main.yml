@@ -1,0 +1,8 @@
+---
+install_state_dir: /opt/ansible/install_state
+install_state: {
+  key: "",
+  name: "",
+  state: "",
+  commit: false
+}

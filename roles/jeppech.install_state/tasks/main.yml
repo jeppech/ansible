@@ -1,0 +1,12 @@
+---
+- name: Check state.
+  ansible.builtin.include_tasks:
+    file: check.yml
+  when: not install_state.commit
+
+- name: Comitting state to file.
+  ansible.builtin.copy:
+    dest: "{{ install_state_dir }}/{{ install_state.name }}"
+    content: "{{ install_state.state }}"
+    mode: "0644"
+  when: install_state.commit

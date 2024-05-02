@@ -1,0 +1,29 @@
+---
+- name: Ensure install state file.
+  ansible.builtin.file:
+    path: "{{ install_state_dir }}/{{ install_state.name }}"
+    state: file
+    mode: "0644"
+  register: install_state__file_exists
+
+- name: Set initial state as clean.
+  ansible.builtin.set_fact:
+    key_value: {"{{ install_state.key }}": false }
+
+- name: Read state file.
+  ansible.builtin.slurp:
+    src: "{{ install_state_dir }}/{{ install_state.name }}"
+  register: install_state__file_content
+  when: not install_state__file_exists.changed
+
+- name: Set state as dirty, if state file was absent.
+  ansible.builtin.set_fact:
+    key_value: {"{{ install_state.key }}": true }
+  when: install_state__file_exists.changed
+
+- name: Set state dirty, if state differs.
+  ansible.builtin.set_fact:
+    key_value: {"{{ install_state.key }}": true }
+  when:
+    - not install_state__file_exists.changed
+    - (install_state__file_content.content | b64decode | trim) != install_state.state
