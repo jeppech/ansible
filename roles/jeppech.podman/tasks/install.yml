@@ -1,0 +1,53 @@
+---
+- name: Create temporary directory for podman.
+  ansible.builtin.file:
+    path: "{{ podman_tmp_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Download podman from GitHub.
+  ansible.builtin.get_url:
+    url: "{{ podman_release_url }}"
+    dest: "{{ podman_tmp_dir }}"
+    mode: "0755"
+
+- name: Extract podman from archive.
+  ansible.builtin.unarchive:
+    remote_src: true
+    src: "{{ podman_tmp_dir }}/{{ podman_release_archive }}"
+    dest: "{{ podman_tmp_dir }}"
+    mode: "0755"
+
+- name: Copy podman binary to install directory.
+  ansible.builtin.copy:
+    remote_src: true
+    src: "{{ podman_tmp_dir }}/bin/{{ podman_release_filename }}"
+    dest: "{{ podman_install_dir }}/podman"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Copy systemd service unit for podman.
+  ansible.builtin.template:
+    src: "podman.service.j2"
+    dest: "/etc/systemd/system/podman.service"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Copy systemd socket unit for podman.
+  ansible.builtin.template:
+    src: "podman.socket.j2"
+    dest: "/etc/systemd/system/podman.socket"
+    owner: "root"
+    group: "root"
+    mode: "0755"
+
+- name: Ensure podman is started and enabled at boot.
+  ansible.builtin.systemd:
+    name: podman
+    state: "{{ podman_service_state }}"
+    enabled: "{{ podman_service_enabled }}"
+    daemon_reload: true
+  ignore_errors: "{{ ansible_check_mode }}"
+  when: podman_service_manage | bool

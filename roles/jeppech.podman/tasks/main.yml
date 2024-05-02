@@ -1,42 +1,26 @@
 ---
-- name: Request latest podman release from GitHub.
-  ansible.builtin.uri:
-    url: "{{ podman_release_url }}"
-    return_content: true
-  register: podman_release_info
+- name: Assert install state.
+  ansible.builtin.include_role:
+    name: jeppech.install_state
+    vars:
+      install_state: {
+        key: "{{ podman_state_key }}",
+        name: "{{ role_name }}",
+        state: "{{ podman_version }}"
+      }
 
-- name: Download podman from GitHub.
-  loop: "{{ podman_release_info.json.assets }}"
-  when: item.name == podman_tarball
-  ansible.builtin.unarchive:
-    src: "{{ item.browser_download_url }}"
-    dest: "{{ podman_install_dir }}"
-    remote_src: true
-    mode: "0755"
-    include:
-      - podman
+- name: Install Podman.
+  ansible.builtin.include_tasks:
+    file: install.yml
+  when: lookup('vars', podman_state_key) | bool
 
-- name: Copy systemd service unit for podman.
-  ansible.builtin.template:
-    src: "podman.service.j2"
-    dest: "/etc/systemd/system/podman.service"
-    owner: "root"
-    group: "root"
-    mode: "0755"
-
-- name: Copy systemd socket unit for podman.
-  ansible.builtin.template:
-    src: "podman.socket.j2"
-    dest: "/etc/systemd/system/podman.socket"
-    owner: "root"
-    group: "root"
-    mode: "0755"
-
-- name: Ensure podman is started and enabled at boot.
-  ansible.builtin.systemd:
-    name: podman
-    state: "{{ podman_service_state }}"
-    enabled: "{{ podman_service_enabled }}"
-    daemon_reload: true
-  ignore_errors: "{{ ansible_check_mode }}"
-  when: podman_service_manage | bool
+- name: Commit new state.
+  ansible.builtin.include_role:
+    name: jeppech.install_state
+    vars:
+      install_state: {
+        name: "{{ role_name }}",
+        state: "{{ podman_version }}",
+        commit: true
+      }
+  when: lookup('vars', podman_state_key) | bool
